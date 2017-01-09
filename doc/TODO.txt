@@ -1,0 +1,14 @@
+TODOs
+
+* Add delete and update to the children database.
+* Add password-protection to the children website but not the main one.
+      Add function to query a password table in the register database.
+* Add a default page with intro options when the URI is "/"
+
+* Add an email field to the table, capture it for the children and auto-email them
+      with an opt-out link.
+
+BUGs
+
+* Hard-coded localhost:3000 -This should be got from the request or made relative in the HTML.
+* Move common HTML and database functions/objects into their own files.
