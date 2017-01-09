@@ -1,0 +1,41 @@
+Run the mysql server with:
+DBDIR=~/Development/Databases
+mysqld_safe --no-options --log-error=$DBDIR/mysql.err --datadir=$DBDIR/MySQL --socket=$DBDIR/socket
+
+Shut it down with:
+mysqladmin -u root -p --socket=$DBDIR/socket  -- shutdown
+
+Use the local client with 
+mysql -u paw -p --socket=$DBDIR/socket finances
+
+Use a remote client with
+mysql -u paw -p --host=127.0.0.1 --port=3306 finances
+
+
+
+
+UNIX SOCKETS
+
+You can run the mysqld as user paw as long as you specify a socket.
+By default the mysqld is compiled to use a socket under /var/run which is only writeable as root.
+
+
+
+NETWORK CONNECTIONS
+
+The mysql server has default preferences to disable network connections and use only the unix socket.
+These are in /opt/local/etc/mysql56/my.conf.
+
+If you want network connection available (e.g. for jdbc connections) then pass --no-options as the first
+entry on the command line. By default it will then use 127.0.0.1:3306 for the location.
+
+Also note, use '127.0.0.1' not 'localhost', as localhost sometimes defaults to the unix socket automatically.
+127.0.0.1 always uses TCP.
+
+
+
+
+HINTS
+
+The password for paw is my standard old password. The musical one.
+The root password is my usual root password. The wild one.

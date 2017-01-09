@@ -1,0 +1,8 @@
+/* Styles for default tables. Stripey, padded and with headers and the table as a whole having a border. */
+
+table { border-collapse: collapse; }
+table, th { border: 1px solid black; }
+th,td { padding: 15px; }
+th { text-align: center; }
+td { text-align: left; }
+tr:nth-child(even) { background-color: #f2f2f2 }
