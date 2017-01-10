@@ -9,4 +9,4 @@ TODOs
 BUGs
 
 * Hard-coded localhost:3000 -This should be got from the request or made relative in the HTML.
-* Move common HTML and database functions/objects into their own files.
+

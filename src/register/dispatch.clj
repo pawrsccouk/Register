@@ -1,13 +1,7 @@
 (ns register.dispatch
-  (:use ring.adapter.jetty
-	ring.util.response
-	ring.middleware.resource
-        ring.middleware.content-type
-        ring.middleware.not-modified
-	ring.middleware.basic-authentication
-	ring.handler.dump)
-  (:require (java)
-	    (clojure [string :as string]))
+  "I hold a dispatch macro which searches for string components on the URI
+of the header passed in and calls different handler functions depending on
+which one it finds."
   (:gen-class))
 
 ;; I want to make a dispatch-handling wrapper which will test the URI and will call a different function depending

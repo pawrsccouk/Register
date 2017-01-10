@@ -1,5 +1,6 @@
 (ns register.core
-  (require java)
+  "I represent the entrance point to the webserver. 
+Here the main application function is created and the Jetty server is launched."
   (require [ring.util.response :refer [not-found response]])
   (require [ring.adapter.jetty :refer [run-jetty]])
   (require [ring.middleware
