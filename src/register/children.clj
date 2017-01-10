@@ -30,9 +30,9 @@ TITLE is the title which will be shown for the page."
    ;; This tells the HTML to display at the standard width of smaller devices e.g. iPad etc.
    [:meta {:name "viewport" :content "width=device-width, initial-scale=1.0"}]
    ;; Load our stylesheet.
-   [:link {:rel "stylesheet" :type "text/css" :href (str website-base "/static/stylesheet.css")}]
+   [:link {:rel "stylesheet" :type "text/css" :href (str website-base "/stylesheet.css")}]
    ;; Specify a favicon to show for the website.
-   [:link {:rel "icon" :type "image/png" :href (str website-base "/static/icon.png")}]
+   [:link {:rel "icon" :type "image/png" :href (str website-base "/icon.png")}]
    [:title (str title)]])
 
 

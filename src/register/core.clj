@@ -12,10 +12,8 @@
 	    [children :as children]])
   (:gen-class))
 
-;; (def conn-string "jdbc:mysql://127.0.0.1:3306?user=paw&password=15t2chr2")
-
 (defn- not-found-handler [header]
-  (not-found (str "The resource you requested " (:uri header) " was not available.")))
+  (not-found (str "The resource you requested [" (:uri header) "] was not available.")))
 
 (defn get-application
   "I return an application which can be passed to Jetty to run a web app."
@@ -26,8 +24,7 @@
 			   (wrap-resource "public")
 			   (wrap-content-type)
 			   (wrap-not-modified))]
-    (-> (dispatch not-found-handler
-		  "/static/"          static-handler 
+    (-> (dispatch static-handler ; I use the static handler as a not-found handler
 		  "/children/add/"    children/add-child-handler
 		  "/children/remove/" children/remove-child-handler
 		  "/children/edit/"   children/edit-child-handler
