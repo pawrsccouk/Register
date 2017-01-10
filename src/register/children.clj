@@ -1,18 +1,10 @@
 (ns register.children
-  (require java)			; My java debugging file.
   (require [hiccup [form :as form] [page :as page] [util :as util]])
   (require [ring.middleware [params :refer [wrap-params]] [keyword-params :refer [wrap-keyword-params]]])
   (require [ring.util.response :refer [response content-type]])
   (require [clojure.java.jdbc :as jdbc])
-  (require [clojure.pprint :refer [pprint]])
+  (require [register.database :as db])
   (:gen-class))
-
-;; The database information required to connect via jdbc.
-(def dbinfo {:classname "com.mysql.cj.jdbc.Driver"
-             :subprotocol "mysql"
-             :subname "//127.0.0.1:3306/register" ;; host:port/database-name
-             :user "paw"
-             :password "15t2chr2"})
 
 (def website-base
      "The base where this website is found."
@@ -69,7 +61,7 @@ This can throw exceptions, use higher-up middleware to catch them."
 		     :parentname (params :yourname)
 		     :address    (params :address)}]
     ;;(pprint db-row-data)
-    (jdbc/insert! dbinfo :children db-row-data)
+    (jdbc/insert! db/info :children db-row-data)
     ;; Return a notification that the operation succeeded.
     (page/html5
      (html-head "Child added")
@@ -104,7 +96,7 @@ or parses the results of said form to update the database."
 		     [ :td ~(:childname rsmap)]
 		     [ :td ~(:parentname rsmap)]
 		     [ :td ~(:address rsmap)]])]
-     (jdbc/query dbinfo
+     (jdbc/query db/info
 		 ["select * from children"]
 		 { :row-fn to-hiccup })))
 
