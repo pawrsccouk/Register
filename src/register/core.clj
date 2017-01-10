@@ -42,7 +42,7 @@ then I replace it with root-replacement (for example /index.html)."
     (-> (dispatch static-handler ; I use the static handler as a not-found handler
 		  "/children/add/"    children/add-child-handler
 		  "/children/remove/" children/remove-child-handler
-		  "/children/edit/"   children/edit-child-handler
+		  "/children/update/" children/update-child-handler
 		  "/children/"        children/show-children-handler)
 	wrap-stacktrace
 	(wrap-transform-root-uri "/index.html"))))

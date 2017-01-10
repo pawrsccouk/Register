@@ -21,7 +21,7 @@ HTML forms posted."
   "Returns a form for registering child information."
   []
   (html/page "Add a child to the register."
-	     (form/form-to [:post "/children/add/"]
+	     (form/form-to [:post "/children/add/submit/"]
 			   [:h1 "Add a child to the register"]
 			   [:p "Please fill out the details to register your child's information."]
 			   [:p
@@ -63,8 +63,9 @@ or parses the results of said form to update the database."
        (fn [header]
 	 (html/content-type
 	  (response
-	    ;; GET is a request for the form itself, POST is the completed form.
-	    (if (= (:request-method header) :post)
+	   ;; The completed form has a URI ending in /submit/. Process it.
+	   ;; Otherwise this is a request for the form to be filled in.
+	    (if (.endsWith (:uri header) "/submit/")
 	      (parse-add-child-form header)
 	      (make-add-child-form))))))))
 
@@ -78,8 +79,11 @@ or parses the results of said form to update the database."
 	chid  (:id rowmap)
 	delform (form/form-to [:put "/children/remove/"]
 			      (form/hidden-field "id" chid)
-			      (form/submit-button "Delete"))]
-    [:tr [:td cname] [:td pname] [:td addr] [:td delform]]))
+			      (form/submit-button "Delete"))
+	updform (form/form-to [:put "/children/update/"]
+			      (form/hidden-field "id" chid)
+			      (form/submit-button "Update"))]
+    [:tr [:td cname] [:td pname] [:td addr] [:td delform updform]]))
 
 
 (defn- get-all-children
@@ -150,8 +154,68 @@ an error or signifying success."
 	   (parse-child-remove-form header)))))))
 
 
-(def edit-child-handler
-     "A Ring handler function to handle deleting a child from the database.
-Currently not implemented."
-     not-implemented-handler)
 
+(defn- make-update-child-form
+  "Returns a form for updating information about an existing child."
+  [{params :params}]
+  (let [chid (:id params)
+	rows (jdbc/query db/info ["select childname, parentname, address from children where id = ?" chid])
+	row  (first rows)]
+    (html/page (str "Update information for " (:childname row))
+	       (form/form-to [:post "/children/update/submit/"]
+			     (form/hidden-field "id" chid)
+			     [:h1 "Update information for " (:childname row)]
+			     [:p "Please change any details which are wrong and update the details."]
+			     [:p
+			      (form/label "childname" "Child's name")
+			      (form/text-area "childname" (:childname row))
+			      [:br]
+			      (form/label "yourname" "Your name")	     
+			      (form/text-area "yourname" (:parentname row))
+			      [:br]
+			      (form/label "address" "Your address")
+			      (form/text-area "address" (:address row))
+			      ]
+			     [:br]		
+			     (form/submit-button "Update"))
+	       [:a {:href (util/url html/website-base "/children/")} "Cancel"])))
+
+
+(defn- parse-update-child-form
+  "Extracts data from the form created in make-form and stores it to the database.
+This can throw exceptions, use higher-up middleware to catch them."
+  [{params :params}]
+  ;; First execute the SQL
+  (let [chid (:id params)
+	db-row-data {:childname  (params :childname)
+		     :parentname (params :yourname)
+		     :address    (params :address)}
+	row (jdbc/update! db/info :children db-row-data ["id = ?" (params :id)])]
+    (if (= (first row) 1)
+      ;; Return a notification that the operation succeeded.
+      (html/page "Child updated"
+		 [:h1 (params :childname) " updated"]
+		 [:p  (params :childname) " has been updated in the database."]
+		 [:p "Please click on the link below to return."]
+		 [:a {:href (util/url html/website-base "/children/")} "All children"])
+      ;; ditto if it failed.
+      (html/page "Error updating child"
+		 [:h1 "Error updating details for " (params :childname) ]
+		 [:p "There was a problem updating your child (ID " chid ") in the database."]
+		 [:p "Please click on the link below to return to the children table and try again,"
+		  "or contact an administrator."]
+		 [:a {:href (util/url html/website-base "/children/")} "All children"]))))
+
+(def update-child-handler
+     "A Ring middleware handler which pre-fills a form with child data and presents it to the user
+or parses the results of said form to update the child's entry in the database."
+     (wrap-params				; puts parameters in :form-params or :query-params
+      (wrap-keyword-params			; as clojure keywords, not strings.
+       (fn [header]
+	 (html/content-type
+	  (response
+	   ;; a URI ending in /submit/ is the completed form needing processing
+	   ;; otherwise we want the form to be filled in.
+	   (if (.endsWith (:uri header) "/submit/")
+	     (parse-update-child-form header)
+	     (make-update-child-form header))))))))
