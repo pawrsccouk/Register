@@ -70,17 +70,24 @@ or parses the results of said form to update the database."
 
 ;; Showing the children in the database
 
+(defn- row-to-hiccup
+  [rowmap]
+  (let [cname (:childname rowmap)
+	pname (:parentname rowmap)
+	addr  (:address rowmap)
+	chid  (:id rowmap)
+	delform (form/form-to [:put "/children/remove/"]
+			      (form/hidden-field "id" chid)
+			      (form/submit-button "Delete"))]
+    [:tr [:td cname] [:td pname] [:td addr] [:td delform]]))
+
+
 (defn- get-all-children
   "Returns all the children in the database as a vector of Hiccup codes."
   []
-  (let [to-hiccup (fn [rsmap]
-		   `[ :tr
-		     [ :td ~(:childname rsmap)]
-		     [ :td ~(:parentname rsmap)]
-		     [ :td ~(:address rsmap)]])]
-     (jdbc/query db/info
-		 ["select * from children"]
-		 { :row-fn to-hiccup })))
+  (jdbc/query db/info
+	      ["select * from children"]
+	      { :row-fn row-to-hiccup }))
 
 
 
@@ -94,7 +101,7 @@ or parses the results of said form to update the database."
 	       [:h1 "Children"]
 	       [:p "Here are all the children we have registered."]
 	       [:table
-		[:tr [:th "Child's Name"] [:th "Parent's Name"] [:th "Address"]]
+		[:tr [:th "Child's Name"] [:th "Parent's Name"] [:th "Address"] [:th "Actions"]]
 		(get-all-children)]
 	       [:p
 		[:a {:href (util/url "add/")} "Add a child"]]))))
@@ -108,13 +115,40 @@ or parses the results of said form to update the database."
   (html/content-type
    (response
     (html/page "Not implemented"
-	       [:div [:title "Not implemented."] "This is not implemented yet."]))))
+	       [:p "This is not implemented yet."]))))
+
+(defn- parse-child-remove-form
+  "I take the parameters from the header file, extract the ID from them
+and use that to delete a row in the database, returning an HTML page with
+an error or signifying success."
+  [{params :params}]
+  (let [chid (:id params)
+	rows (jdbc/delete! db/info :children ["id = ?" chid])]
+    (if (= (first rows) 1)
+					; Return a notification that the operation succeeded.
+      (html/page "Child removed"
+		 [:h1 "Child remove"]
+		 [:p "Your child has been removed from the database."]
+		 [:p "Please click on the link below to return."]
+		 [:a {:href (util/url html/website-base "/children/")} "All children"])
+					; Ditto if it failed.
+      (html/page "Error removing child"
+		 [:h1 "Error removing child"]
+		 [:p (str "There was a problem removing your child (ID " chid ") from the database.")]
+		 [:p "Please click on the link below to return to the children table and try again,"
+		  "or contact an administrator."]
+		 [:a {:href (util/url html/website-base "/children/")} "All children"]))))
 
 
 (def remove-child-handler
-     "A Ring handler function to handle deleting a child from the database.
-Currently not implemented."
-     not-implemented-handler)
+     "A Ring handler function to handle deleting a child from the database."
+     (wrap-params				; puts parameters in :params... 
+      (wrap-keyword-params			; ...as clojure keywords, not strings.
+       (fn [header]
+	 (html/content-type
+	  (response
+	   (parse-child-remove-form header)))))))
+
 
 (def edit-child-handler
      "A Ring handler function to handle deleting a child from the database.
