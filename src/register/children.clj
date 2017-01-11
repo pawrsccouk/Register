@@ -33,6 +33,9 @@ HTML forms posted."
 			    [:br]
 			    (form/label "address" "Your address")
 			    (form/text-area "address")
+			    [:br]
+			    (form/label "email" "Your email")
+			    (form/text-area "email")
 			    ]
 			   [:br]		
 			   (form/submit-button "Add child"))))
@@ -45,7 +48,8 @@ This can throw exceptions, use higher-up middleware to catch them."
   ;; First execute the SQL
   (let [db-row-data {:childname  (params :childname)
 		     :parentname (params :yourname)
-		     :address    (params :address)}]
+		     :address    (params :address)
+		     :email      (params :email)}]
     (jdbc/insert! db/info :children db-row-data)
     ;; Return a notification that the operation succeeded.
     (html/page "Child added"
@@ -72,10 +76,12 @@ or parses the results of said form to update the database."
 ;; Showing the children in the database
 
 (defn- row-to-hiccup
+  "Converts a table row given as a map by JDBC into a vector of hiccup symbols representing an HTML table row."
   [rowmap]
   (let [cname (:childname rowmap)
 	pname (:parentname rowmap)
 	addr  (:address rowmap)
+	email (:email rowmap)
 	chid  (:id rowmap)
 	delform (form/form-to [:put "/children/remove/"]
 			      (form/hidden-field "id" chid)
@@ -83,32 +89,25 @@ or parses the results of said form to update the database."
 	updform (form/form-to [:put "/children/update/"]
 			      (form/hidden-field "id" chid)
 			      (form/submit-button "Update"))]
-    [:tr [:td cname] [:td pname] [:td addr] [:td delform updform]]))
-
-
-(defn- get-all-children
-  "Returns all the children in the database as a vector of Hiccup codes."
-  []
-  (jdbc/query db/info
-	      ["select * from children"]
-	      { :row-fn row-to-hiccup }))
-
-
+    [:tr [:td cname] [:td pname] [:td addr] [:td email]  [:td delform updform]]))
 
 
 (defn show-children-handler
   "A function which returns a page showing all the children in the database."
   [header]
-  (html/content-type
-   (response
-    (html/page "Children"
-	       [:h1 "Children"]
-	       [:p "Here are all the children we have registered."]
-	       [:table
-		[:tr [:th "Child's Name"] [:th "Parent's Name"] [:th "Address"] [:th "Actions"]]
-		(get-all-children)]
-	       [:p
-		[:a {:href (util/url "add/")} "Add a child"]]))))
+  ;; Run the query and then return an HTML page with the output.
+  (let [children (jdbc/query db/info ["select * from children"] { :row-fn row-to-hiccup })]
+    (html/content-type
+     (response
+      (html/page "Children"
+		 [:h1 "Children"]
+		 [:p "Here are all the children we have registered."]
+		 [:table
+		  [:tr [:th "Child's Name"] [:th "Parent's Name"] [:th "Address"] [:th "Email"] [:th "Actions"]]
+		  children
+		  ]
+		 [:p
+		  [:a {:href (util/url "add/")} "Add a child"]])))))
 
 
 ;; Not implemented yet.
@@ -159,7 +158,7 @@ an error or signifying success."
   "Returns a form for updating information about an existing child."
   [{params :params}]
   (let [chid (:id params)
-	rows (jdbc/query db/info ["select childname, parentname, address from children where id = ?" chid])
+	rows (jdbc/query db/info ["select * from children where id = ?" chid])
 	row  (first rows)]
     (html/page (str "Update information for " (:childname row))
 	       (form/form-to [:post "/children/update/submit/"]
@@ -175,6 +174,9 @@ an error or signifying success."
 			      [:br]
 			      (form/label "address" "Your address")
 			      (form/text-area "address" (:address row))
+			      [:br]
+			      (form/label "email" "Your email")
+			      (form/text-area "email" (:email row))
 			      ]
 			     [:br]		
 			     (form/submit-button "Update"))
@@ -189,7 +191,8 @@ This can throw exceptions, use higher-up middleware to catch them."
   (let [chid (:id params)
 	db-row-data {:childname  (params :childname)
 		     :parentname (params :yourname)
-		     :address    (params :address)}
+		     :address    (params :address)
+		     :email      (params :email)}
 	row (jdbc/update! db/info :children db-row-data ["id = ?" (params :id)])]
     (if (= (first row) 1)
       ;; Return a notification that the operation succeeded.

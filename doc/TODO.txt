@@ -2,8 +2,7 @@ TODOs
 
 * Add password-protection to the children website but not the main one.
       Add function to query a password table in the register database.
-* Add an email field to the table, capture it for the children and auto-email them
-      with an opt-out link.
+* Auto-email the children at a set time, with program details and an opt-out link.
 
 BUGs
 
