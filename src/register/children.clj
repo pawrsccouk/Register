@@ -52,7 +52,7 @@ This can throw exceptions, use higher-up middleware to catch them."
 	       [:h1 "Child added"]
 	       [:p "Your child has been added to the database."]
 	       [:p "Please click on the link below to return."]
-	       [:a {:href (util/url html/website-base "/children/")} "All children"])))
+	       [:a {:href (util/url "../../")} "All children"])))
 
 
 (def add-child-handler
@@ -134,14 +134,14 @@ an error or signifying success."
 		 [:h1 "Child remove"]
 		 [:p "Your child has been removed from the database."]
 		 [:p "Please click on the link below to return."]
-		 [:a {:href (util/url html/website-base "/children/")} "All children"])
+		 [:a {:href (util/url "../")} "All children"])
 					; Ditto if it failed.
       (html/page "Error removing child"
 		 [:h1 "Error removing child"]
 		 [:p (str "There was a problem removing your child (ID " chid ") from the database.")]
 		 [:p "Please click on the link below to return to the children table and try again,"
 		  "or contact an administrator."]
-		 [:a {:href (util/url html/website-base "/children/")} "All children"]))))
+		 [:a {:href (util/url "../")} "All children"]))))
 
 
 (def remove-child-handler
@@ -178,7 +178,7 @@ an error or signifying success."
 			      ]
 			     [:br]		
 			     (form/submit-button "Update"))
-	       [:a {:href (util/url html/website-base "/children/")} "Cancel"])))
+	       [:a {:href (util/url "../")} "Cancel"])))
 
 
 (defn- parse-update-child-form
@@ -197,14 +197,14 @@ This can throw exceptions, use higher-up middleware to catch them."
 		 [:h1 (params :childname) " updated"]
 		 [:p  (params :childname) " has been updated in the database."]
 		 [:p "Please click on the link below to return."]
-		 [:a {:href (util/url html/website-base "/children/")} "All children"])
+		 [:a {:href (util/url "../../")} "All children"])
       ;; ditto if it failed.
       (html/page "Error updating child"
 		 [:h1 "Error updating details for " (params :childname) ]
 		 [:p "There was a problem updating your child (ID " chid ") in the database."]
 		 [:p "Please click on the link below to return to the children table and try again,"
 		  "or contact an administrator."]
-		 [:a {:href (util/url html/website-base "/children/")} "All children"]))))
+		 [:a {:href (util/url "../../")} "All children"]))))
 
 (def update-child-handler
      "A Ring middleware handler which pre-fills a form with child data and presents it to the user

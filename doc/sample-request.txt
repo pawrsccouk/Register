@@ -1,0 +1,24 @@
+Ring Request Values
+:server-port		3000
+:server-name		"localhost"
+:remote-addr		"0:0:0:0:0:0:0:1"
+:uri			"/children/"
+:query-string		nil
+:scheme			:http
+:request-method		:get
+:content-type		nil
+:content-length		nil
+:character-encoding	nil
+:ssl-client-cert	nil
+:headers		{"accept-encoding" "gzip, deflate",
+			"accept-language" "en-GB,en;q=0.5",
+			"host" "localhost:3000",
+			"connection" "keep-alive",
+			"user-agent" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.12; rv:50.0) Gecko/20100101 Firefox/50.0",
+			"upgrade-insecure-requests" "1",
+			"accept" "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+			"authorization" "Basic amVmZjpqb3NodWE1" }
+:body			#<HttpInputOverHTTP HttpInputOverHTTP@2c4c3114>
+
+:basic-authentication	true
+:protocol		"HTTP/1.1"
