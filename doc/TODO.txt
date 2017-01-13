@@ -1,6 +1,9 @@
 TODOs
 
 * Auto-email the children at a set time, with program details and an opt-out link.
+* Add an admin site with a hard-coded password allowing admins to modify the users table.
+* Add a 'creator (varchar(20))' 'last_updater (ditto)', 'created (datetime not null)', 'last_updated (ditto)'
+  to each table, and have each update fill them in.
 
 BUGs
 
