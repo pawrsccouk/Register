@@ -12,7 +12,8 @@ HTML forms posted."
   (require [clojure.java.jdbc :as jdbc])
   (require [register
 	    [database :as db]
-	    [html :as html]])
+	    [html :as html]
+	    [dispatch :refer [dispatch]]])
   (:gen-class))
 
 ;; Adding a new child to the database.
@@ -222,3 +223,14 @@ or parses the results of said form to update the child's entry in the database."
 	   (if (.endsWith (:uri header) "/submit/")
 	     (parse-update-child-form header)
 	     (make-update-child-form header))))))))
+
+(def children-handler
+     "I am a handler to call functions based on the URI for the children subsite."
+     ;; Note the dispatch checks the strings in order, so children/ must come after children/add
+     ;; or it will always match.
+     (dispatch html/not-found-handler
+	       "/children/add/"    add-child-handler
+	       "/children/remove/" remove-child-handler
+	       "/children/update/" update-child-handler
+	       "/children/"        show-children-handler))
+

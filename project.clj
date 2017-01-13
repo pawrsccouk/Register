@@ -13,7 +13,9 @@
 		 [mysql/mysql-connector-java "6.0.5"]
 		 [org.clojure/java.jdbc "0.7.0-alpha1"]
 					; HTML generator
-		 [hiccup "1.0.5"]]
+		 [hiccup "1.0.5"]
+					; Password Encryption
+		 [crypto-password "0.2.0"]]
   :main ^:skip-aot register.core
   :target-path "target/%s"
   :profiles {:uberjar {:aot :all}})

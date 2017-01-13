@@ -44,3 +44,13 @@ Example: (page \"Welcome\" [:p \"Welcome\"]...)"
    [:body
     body]))
 
+(defn not-found-handler
+  "I return a 404-not-found response with a custom HTML page indicating what failed."
+  [{uri :uri}]
+  (content-type
+   (response/not-found
+    (page "Page Not Found"
+	  [:h1 "404: Page not found"]
+	  [:p "The resource you requested [" [:i uri] "] was not available."]))))
+
+

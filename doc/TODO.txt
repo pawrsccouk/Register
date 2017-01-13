@@ -1,10 +1,9 @@
 TODOs
 
-* Add password-protection to the children website but not the main one.
-      Add function to query a password table in the register database.
 * Auto-email the children at a set time, with program details and an opt-out link.
 
 BUGs
 
+Basic-encoding sends the password out as base-64's plain text. Is that OK?
 
 
