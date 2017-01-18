@@ -37,11 +37,10 @@ if the user is authenticated."
   ;; Passwords were encrypted with 
   ;; (password/encrypt <password> 100000 "HMAC-SHA256")
   ;; not that this matters, these details are included in the encrypted string.
-  (println "Testing " userid password)
   (try
    (when (or (nil? userid) (nil? password))
      (throw (NullPointerException. "User ID or password is null")))     
-   (let [rows (jdbc/query db/info ["select password from users where userid = ?" userid])
+   (let [rows (jdbc/query (db/info) ["select password from users where userid = ?" userid])
 	 row (first rows)
 	 encrypted (:password row)]
      (if (nil? encrypted) ; If there was no row in the database or the row had no password entry.

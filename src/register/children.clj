@@ -16,6 +16,9 @@ HTML forms posted."
 	    [dispatch :refer [dispatch]]])
   (:gen-class))
 
+;; Database connection for this session.
+(def dbinfo (db/info))
+
 ;; Adding a new child to the database.
 
 (defn- make-add-child-form
@@ -51,7 +54,7 @@ This can throw exceptions, use higher-up middleware to catch them."
 		     :parentname (params :yourname)
 		     :address    (params :address)
 		     :email      (params :email)}]
-    (jdbc/insert! db/info :children db-row-data)
+    (jdbc/insert! dbinfo :children db-row-data)
     ;; Return a notification that the operation succeeded.
     (html/page "Child added"
 	       [:h1 "Child added"]
@@ -97,7 +100,8 @@ or parses the results of said form to update the database."
   "A function which returns a page showing all the children in the database."
   [header]
   ;; Run the query and then return an HTML page with the output.
-  (let [children (jdbc/query db/info ["select * from children"] { :row-fn row-to-hiccup })]
+  (let [dbinfo dbinfo
+	children (jdbc/query dbinfo ["select * from children"] { :row-fn row-to-hiccup })]
     (html/content-type
      (response
       (html/page "Children"
@@ -127,7 +131,7 @@ and use that to delete a row in the database, returning an HTML page with
 an error or signifying success."
   [{params :params}]
   (let [chid (:id params)
-	rows (jdbc/delete! db/info :children ["id = ?" chid])]
+	rows (jdbc/delete! dbinfo :children ["id = ?" chid])]
     (if (= (first rows) 1)
 					; Return a notification that the operation succeeded.
       (html/page "Child removed"
@@ -159,7 +163,7 @@ an error or signifying success."
   "Returns a form for updating information about an existing child."
   [{params :params}]
   (let [chid (:id params)
-	rows (jdbc/query db/info ["select * from children where id = ?" chid])
+	rows (jdbc/query dbinfo ["select * from children where id = ?" chid])
 	row  (first rows)]
     (html/page (str "Update information for " (:childname row))
 	       (form/form-to [:post "/children/update/submit/"]
@@ -194,7 +198,7 @@ This can throw exceptions, use higher-up middleware to catch them."
 		     :parentname (params :yourname)
 		     :address    (params :address)
 		     :email      (params :email)}
-	row (jdbc/update! db/info :children db-row-data ["id = ?" (params :id)])]
+	row (jdbc/update! dbinfo :children db-row-data ["id = ?" (params :id)])]
     (if (= (first row) 1)
       ;; Return a notification that the operation succeeded.
       (html/page "Child updated"
