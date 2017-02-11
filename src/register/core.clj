@@ -2,6 +2,7 @@
   "I represent the entrance point to the webserver. 
 Here the main application function is created and the Jetty server is launched."
   (require [ring.adapter.jetty :refer [run-jetty]])
+  (require [ring.util.response :refer [response]])
   (require [ring.middleware
 	    [stacktrace   :refer [wrap-stacktrace]]
 	    [not-modified :refer [wrap-not-modified]]
@@ -53,24 +54,71 @@ if the user is authenticated."
      false)))
 
 
+(defn- bg-stop-server
+  "I run on a background thread and attempt to shutdown the jetty server.
+I take a reference to the server to shut down."
+  [rserver]
+  (try (.println *err*  "Shutting down Jetty...")
+       (.stop @rserver)
+       (.println *err*  "Jetty stopped.")
+       (catch Exception ex
+	 (.println *err* (str "Error when stopping Jetty: " (.getMessage ex) ex)))))
 
 
+(defn shutdown-handler
+  "I return a function which will shut down the JETTY server when called.
+I take a reference to the server to be shut down."
+  [rserver]
+  (fn [header]
+    ;; return the response and stop the server in the background.
+    (let [resp (html/content-type
+		(response
+		 (html/page "Server shutdown"
+			    [:h1 "Shutdown"]
+			    [:p "The server has shutdown successfully"])))]
+      (try (.start (Thread. #(bg-stop-server rserver)))
+	   (catch Exception ex
+	     (.println *err* (str "Unable to stop Jetty: " + (.getMessage ex) ex))))
+      resp)))
 
 (defn get-application
-  "I return an application which can be passed to Jetty to run a web app."
-  []
+  "I return an application which can be passed to Jetty to run a web app.
+I take a reference which will later be set to the running server object.
+(Do not use this immediately, only in handlers when the server has been started.)"
+  [rserver]
   (let [static-handler (-> html/not-found-handler
 			   (wrap-resource "public")
 			   (wrap-content-type)
 			   (wrap-not-modified))]
     (-> (dispatch static-handler ; I use the static handler as a not-found handler
-		  "/children/" (wrap-basic-authentication children-handler authfn?))
+		  "/children/" (wrap-basic-authentication children-handler authfn?)
+		  "/shutdown"  (shutdown-handler rserver))
 	wrap-stacktrace
 	(wrap-transform-root-uri "/index.html"))))
 
-(defn main []
-  "I return a running Jetty server set up to run this webapp."
-  (let [app (get-application)]
-    (run-jetty app {:port 3000 :join? false})))
+(defn- -run
+  "I run the server as a background thread and return the server object.
+I take the port to run it on."
+  [port]
+  ; Use a reference to the server so we can pass it to the handler before the server is created.
+  (let [rserver (ref nil)
+	app (get-application rserver)
+	server (run-jetty app {:port port :join? false})]
+    ; Allow current requests to stop and clean up when the JVM shuts down.
+    (.setStopTimeout server 1000)
+    (.setStopAtShutdown server true)
+    (dosync (ref-set rserver server))
+    server))
 
 
+(defn run
+  "I return a running Jetty server set up to run this webapp.
+This doesn't block and is intended to be used in the REPL."
+  []
+  (-run 3000))
+
+(defn -main
+  "I run a server set up to display this webapp.
+I block until the server is shut down, so I am used in 'lein run' calls."
+  []
+  (-run 3000))
