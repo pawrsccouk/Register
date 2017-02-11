@@ -1,6 +1,6 @@
 Run the mysql server with:
 DBDIR=~/Development/Databases
-mysqld_safe --no-options --log-error=$DBDIR/mysql.err --datadir=$DBDIR/MySQL --socket=$DBDIR/socket
+mysqld_safe --no-defaults --log-error=$DBDIR/mysql.err --datadir=$DBDIR/MySQL --socket=$DBDIR/socket
 
 Shut it down with:
 mysqladmin -u root -p --socket=$DBDIR/socket  -- shutdown
